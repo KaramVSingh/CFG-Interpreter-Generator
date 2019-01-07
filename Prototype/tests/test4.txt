@@ -1,0 +1,29 @@
+FUNCT int test(int a) {
+    int j;
+    j = 2;
+    printf(j);
+
+    return 1;
+}
+
+FUNCT float testagain(float b, char y) {
+    printf('!');
+    printf(b);
+    printf(y);
+    while(b < 12.4) {
+        printf(y);
+        b = b + 0.1;
+    };
+
+    return 1.0;
+}
+
+printf(123);
+b = 12.0;
+printf(call testagain(6.0, 'u' . ));
+int a;
+a = call testagain(12.3, 'r' .);
+a = call test(9.9 . );
+
+return 1;
+END

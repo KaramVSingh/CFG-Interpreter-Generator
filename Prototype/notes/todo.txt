@@ -1,0 +1,9 @@
+steps in creating interpreter:
+
+1. we have to evaluate the CFG to ensure that it is recursive decent
+2. we have to create the c-based tokenizer (use python to create the c code)
+    a. use python to determine all of the possible tokens (can be a regex or a literal)
+    b. using skeleton tokenizer, create custom tokenizer code
+3. we have to create a parser based on the CFG
+    a. use python to determine all of the non-terminals
+    b. using skeleton parser, we need to create a custom parser

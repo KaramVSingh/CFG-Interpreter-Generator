@@ -1,0 +1,49 @@
+```INTEGER``` -> ^[0-9]+$
+```BOOLEAN``` -> ^True|False$
+```FUNCTION``` -> ^[a-z]+$
+```VARIABLE``` -> ^[a-z]+$
+```TYPE``` -> ^[a-z]+$
+
+when defining and using a token we will use ``` ```
+when defining a parse we will use ` `
+when defining meanging for a parse we will use `` ``
+
+`EQOPERATOR` -> == | !=
+`REOPERATOR` -> < | > | <= | >=
+`ADOPERATOR` -> + | -
+`MULOPERATOR` -> * | /
+`UNOPERATOR` -> * | !
+
+`Struct` -> `DeclareStruct`
+`DeclareStruct` -> struct `TYPE` { `InfoStruct` } ;
+`InfoStruct` -> e | `Type` `VARIABLE`, 
+
+`Type` -> int | bool | `TYPE`
+
+`Funct` -> `DeclareFunct`
+`DeclareFunct` -> `Type` `FUNCTION` ( `ArgsFunct` ) { `Stmt` }
+`ArgsFunct` -> e | `Type` `VARIABLE`, `ArgsFunct`
+
+`Expr` -> `OrExpr` # return $1 #
+`OrExpr` -> `AndExpr` || `OrExpr` # if($1.type == 'bool' && $2.type == 'bool'){return result{type = "bool", value = $1.value || $2.value}}else{exit()} # | `AndExpr` # return $1 #
+`AndExpr` -> `EqualityExpr` && `AndExpr` # if($1.type == 'bool' && $2.type == 'bool'){return result{type = "bool", value = $1.value && $2.value}}else{exit()} # | `EqualityExpr` # return $1 #
+`EqualityExpr` -> `RelationalExpr` `EQOPERATOR` `EqualityExpr` # if($2 == "=="){if($1.type == $2.type){return result{type = $1.type, value = $1.value == $2.value}}} # | `RelationalExpr`
+`RelationalExpr` -> `AdditiveExpr` `REOPERATOR` `RelationalExpr` | `AdditiveExpr`
+`AdditiveExpr` -> `MultiplicativeExpr` `ADOPERATOR` `AdditiveExpr` | `MultiplicativeExpr`
+`MultiplicativeExpr` -> `PowerExpr` `MULOPERATOR` `MultiplicativeExpr` | `PowerExpr`
+`PowerExpr` -> `UnaryExpr` ^ `PowerExpr` | `UnaryExpr`
+`UnaryExpr` -> `UNOPERATOR` `UnaryExpr` | `PrimaryExpr`
+`PrimaryExpr` -> `INTEGER` # return result{type="INTEGER", value=$1.to_int} # | `BOOLEAN` | `GetVar` | `FUNCTION` ( `ArgsFunct` ) | ( `Expr` )
+
+`GetVar` -> `VARIABLE` `Accessor`
+`Accessor -> e | . `GetVar`
+
+`Stmt` -> `StmtOptions` `Stmt` | `StmtOptions`
+`StmtOptions` -> `DeclareStmt` | `AssignStmt` | `PrintStmt` | `IfStmt` | `WhileStmt` | `ReturnStmt`
+`DeclareStmt` -> `Type` `VARIABLE` ;
+`AssignStmt` -> `GetVar` = `Expr` ;
+`PrintStmt` -> printf( `Expr` )
+`IfStmt` -> if( `Expr` ) { `Stmt` } `ElseBranch`
+`ElseBranch` -> else { `Stmt` } | e
+`WhileStmt` -> while( `Expr` ) { `Stmt` }
+`ReturnStmt` -> return `Expr`
