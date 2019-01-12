@@ -5,6 +5,8 @@ import './index.css';
 class Token extends React.Component {
     constructor(props) {
         super(props);
+        this.index = props.index;
+        this.callback = props.callback;
 
         this.state = {
             name: '',
@@ -42,10 +44,14 @@ class Token extends React.Component {
         if(this.state.name === '' || this.state.regex === '') {
             this.setState({
                 error: true
+            }, () => {
+                this.callback(this.state.name, this.index);
             });
         } else {
             this.setState({
                 error: false
+            }, () => {
+                this.callback(this.state.name, this.index);
             });
         }
 
@@ -96,16 +102,56 @@ class TokenEditor extends React.Component {
         super(props);
 
         this.state = {
-            tokens: []
-        }
+            tokens: [],
+            names: [],
+            error: false
+        };
     }
 
     addToken = () => {
-        this.state.tokens.push(<Token key={this.state.tokens.length}/>);
+        this.state.tokens.push(<Token key={this.state.tokens.length} index={this.state.tokens.length} callback={this.updateEditorName}/>);
+        this.state.names.push('');
         this.forceUpdate();
+    }
+
+    updateEditorName = (name, index) => {
+        var tempNames = this.state.names;
+        tempNames[index] = name;
+        this.setState({
+            names: tempNames,
+        }, () => {
+            var tempHash = {};
+            var foundError = false;
+            this.state.names.forEach((value) => {
+                if(value in tempHash) {
+                    // we have an error
+                    foundError = true;
+                    this.setState({
+                        error: true
+                    });
+                } else {
+                    tempHash[value] = true;
+                }
+            });
+
+            if(!foundError) {
+                this.setState({
+                    error: false
+                });
+            }
+        });
     }
     
     render() {
+        var errorMessage;
+        if(this.state.error) {
+            errorMessage = (
+                <div className="error-message">
+                    Two tokens cannot share the same name.
+                </div>
+            )
+        }
+
         return (
             <div className="token-editor">
                 <div className="header">
@@ -116,6 +162,7 @@ class TokenEditor extends React.Component {
                     sorted properly.
                     <button onClick={this.addToken}>Add a token</button>
                 </div>
+                {errorMessage}
                 <div className="body">
                     {this.state.tokens}
                 </div>
