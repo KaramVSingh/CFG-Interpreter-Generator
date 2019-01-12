@@ -1,5 +1,41 @@
 body {
     font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 40px;
+}
+
+.token input[type="text"] {
+    margin-right: 7%;
+    width: 20%;
+}
+
+.token input[type="checkbox"] {
+    vertical-align: middle;
+    margin-right: 20px;
+}
+
+.token {
+    border-style: solid;
+    border-width: 0.5px;
+    margin-bottom: 5px;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.token-editor .header button {
+    margin-top: 10px;
+}
+
+.token-editor .header h1 {
+    margin-bottom: 5px;
+    font-size: 20px;
 }
   
+.cfg-editor .header h1 {
+    margin-bottom: 5px;
+}
+
+.cfg-editor .body {
+    margin-top: 20px;
+}
