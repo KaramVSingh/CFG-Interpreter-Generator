@@ -9,7 +9,7 @@ body {
     border-style: solid;
     border-width: 0.5px;
     margin-bottom: 5px;
-    margin-top: 10px;
+    margin-top: 15px;
     padding: 10px;
     padding-left: 20px;
     background: salmon;
@@ -28,9 +28,23 @@ body {
 .token {
     border-style: solid;
     border-width: 0.5px;
-    margin-bottom: 5px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    margin-right: 5px;
+    margin-left: 5px;
     padding: 10px;
     padding-left: 20px;
+}
+
+.token-editor .body {
+    overflow: scroll;
+    height: 250px;
+    border: solid;
+    border-width: 0.5px;
+}
+
+.token-editor .body::-webkit-scrollbar {
+    display: none;
 }
 
 .token-editor .header button {
@@ -40,6 +54,10 @@ body {
 .token-editor .header h1 {
     margin-bottom: 5px;
     font-size: 20px;
+}
+
+.token-editor {
+    overflow: hidden;
 }
   
 .cfg-editor .header h1 {
