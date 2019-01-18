@@ -10,14 +10,20 @@ class CfgEditor extends React.Component {
         };
     }
 
-    updateTokens = (tokens) => {
-        this.setState({
-            cfg: {
-                tokens: tokens,
-            },
-        }, () => {
-            console.log(this.state.cfg);
-        });
+    propagateUpdate = () => {
+        console.log(this.getObject());
+    }
+
+    getObject = () => {
+        var tokenEditor = this.refs.TokenEditor.getObject();
+        if(tokenEditor['error'] !== undefined) {
+            // we have an error
+            console.log('INVALID CFG')
+        } else {
+            return {
+                tokens: tokenEditor,
+            };
+        }
     }
 
     render() {
@@ -29,7 +35,7 @@ class CfgEditor extends React.Component {
                     For more information on how this affects the grammar click here.
                 </div>
                 <div className="body">
-                    <TokenEditor callback={this.updateTokens}/>
+                    <TokenEditor propagateUpdate={this.propagateUpdate} ref="TokenEditor" />
                 </div>
             </div>
         );

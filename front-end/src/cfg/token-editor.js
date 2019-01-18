@@ -5,73 +5,70 @@ class TokenEditor extends React.Component {
     constructor(props) {
         super(props);
 
+        this.propagateUpdate = props.propagateUpdate;
+        this.refCollection = [];
         this.state = {
             tokens: [],
-            data: {
-                error: false,
-                tokens: []
-            },
-            update: props.callback,
+            error: '',
         };
-    }
-
-    checkNameRepeatError() {
-        var hist = {}
-        var error = false;
-        this.state.data.tokens.forEach((token) => {
-            if(token.name in hist) {
-                error = true;
-            }
-
-            hist[token.name] = true;
-        });
-
-        return error;
-    }
-
-    updateToken = (id, name, regex, delimiter, error) => {
-        var temp = this.state.data.tokens;
-        temp[id] = {
-            name: name,
-            regex: regex,
-            delimiter: delimiter,
-            error: error,
-        };
-
-        // if any of the tokens have an error or the tokens have the same name
-        var globalError = false;
-
-        temp.forEach((token) => {
-            globalError = globalError || token.error;
-        });
-
-        globalError = globalError || this.checkNameRepeatError();
-
-        this.setState({
-            data: {
-                error: globalError,
-                tokens: temp,
-            },
-        }, () => this.state.update(this.state.data));
     }
 
     addToken = () => {
-        this.state.tokens.push(<Token key={this.state.tokens.length} index={this.state.tokens.length} callback={this.updateToken}/>);
-        this.state.data.tokens.push({
-            name: "",
-            regex: "",
-            delimiting: false,
-            error: true,
+        this.refCollection.push(null);
+        this.state.tokens.push(<Token ref={(instance) => { this.refCollection[this.refCollection.length - 1] = instance; }} propagateUpdate={this.propagateUpdate} key={this.state.tokens.length} index={this.state.tokens.length} />);
+        
+        this.forceUpdate(() => {
+            this.propagateUpdate();
         });
-        this.forceUpdate();
+    }
+
+    getObject = () => {
+        var data = [];
+        var names = {};
+        var error = '';
+
+        this.refCollection.forEach((ref) => {
+            var curr = ref.getObject();
+            data.push(curr);
+            if(curr['error'] !== undefined) {
+                // the token resulted in an error:
+                error = curr['error'];
+                this.setState({
+                    error: error,
+                });
+
+            } else if(curr['name'] in names) {
+                // there is a repeat name token error
+                error = 'Two tokens cannot share the same name.'
+                this.setState({
+                    error: error,
+                });
+
+            } else {
+                names[curr['name']] = true;
+            }
+        });
+
+        if(error === '') {
+            // we do not have an error
+            this.setState({
+                error: ''
+            });
+
+            return data;
+        } else {
+            return {
+                error: error
+            };
+        }
     }
     
     render() {
         var errorMessage;
-        if(this.checkNameRepeatError()) {
+        if(this.state.error.length !== 0) {
             errorMessage = (
                 <div className="error-message">
-                    Two tokens cannot share the same name.
+                    {this.state.error}
                 </div>
             )
         }
