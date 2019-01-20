@@ -18,17 +18,21 @@ class TerminalEditor extends React.Component {
         var errorDescription = '';
         var data = [];
 
-        this.refCollection.forEach((ref) => {
+        this.refCollection.forEach((ref, index) => {
             ref.evaluate(() => {});
         });
 
-        this.refCollection.forEach((ref) => {
+        var i = 0;
+        var ref = null;
+        for(i = 0; i < this.refCollection.length; i++) {
+            ref = this.refCollection[i];
             var isValid = ref.isValid();
-            data.push(ref.getObject());
-            if(isValid !== '') {
-                errorDescription = ref.getObject()['error'];
+            var child = ref.getObject();
+            data.push(child);
+            if(isValid !== '' || child['error'] !== undefined) {
+                errorDescription = child['error'];
             }
-        });
+        }
 
         if(errorDescription !== '') {
             this.setState({
@@ -40,14 +44,15 @@ class TerminalEditor extends React.Component {
             };
         }
 
-        this.refCollection.forEach((ref, index) => {
+        for(i = 0; i < this.refCollection.length; i++) {
+            ref = this.refCollection[i];
             if(ref.state.name in terminalNames) {
-                terminalNames[ref.state.name].push(index);
+                terminalNames[ref.state.name].push(i);
                 errorDescription = 'Two Terminals cannot share the same name.';
             } else {
-                terminalNames[ref.state.name] = [index];
+                terminalNames[ref.state.name] = [i];
             }
-        });
+        }
 
         if(errorDescription !== '') {
             this.setState({

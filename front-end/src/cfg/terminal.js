@@ -30,14 +30,73 @@ class Terminal extends React.Component {
     }
 
     getObject = () => {
-        if(this.state.error !== '') {
+        // first we need to check the terminal related errors
+        if(this.isValid() !== '') {
             return {
-                error: this.state.error
+                error: this.isValid()
+            };
+        }
+
+        var errorDescription = '';
+        var data = [];
+
+        this.refCollection.forEach((ref) => {
+            ref.evaluate(() => {});
+        });
+
+        var i = 0;
+        var ref = null;
+        for(i = 0; i < this.refCollection.length; i++) {
+            ref = this.refCollection[i];
+            var isValid = ref.isValid();
+            data.push(ref.getObject());
+            if(isValid !== '') {
+                errorDescription = ref.getObject()['error'];
+            }
+        };
+
+        if(errorDescription !== '') {
+            this.setState({
+                error: errorDescription
+            });
+
+            return {
+                error: errorDescription
+            };
+        }
+
+        for(i = 0; i < this.refCollection.length; i++) {
+            // we need to check for expression based errors.
+        }
+
+        if(errorDescription !== '') {
+            this.setState({
+                error: errorDescription
+            });
+
+            // we want to highlight the bad ones
+            /*
+            var tempCollection = this.refCollection;
+            Object.keys(terminalNames).forEach(function(name) {
+                if(terminalNames[name].length !== 1) {
+                    terminalNames[name].forEach((index) => {
+                        tempCollection[index].setState({
+                            error: true
+                        });
+                    });
+                }
+            });
+            */
+
+            return {
+                error: errorDescription
             };
         } else {
-            return {
-                name: this.state.name,
-            };
+            this.setState({
+                error: ''
+            });
+
+            return data;
         }
     }
 

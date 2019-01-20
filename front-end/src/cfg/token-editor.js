@@ -31,13 +31,16 @@ class TokenEditor extends React.Component {
             ref.evaluate(() => {});
         });
 
-        this.refCollection.forEach((ref) => {
+        var i = 0;
+        var ref = null;
+        for(i = 0; i < this.refCollection.length; i++) {
+            ref = this.refCollection[i];
             var isValid = ref.isValid();
             data.push(ref.getObject());
             if(!isValid) {
                 errorDescription = ref.getObject()['error'];
             }
-        });
+        }
 
         if(errorDescription !== '') {
             this.setState({
@@ -49,14 +52,15 @@ class TokenEditor extends React.Component {
             };
         }
 
-        this.refCollection.forEach((ref, index) => {
+        for(i = 0; i < this.refCollection.length; i++) {
+            ref = this.refCollection[i];
             if(ref.state.name in tokenNames) {
-                tokenNames[ref.state.name].push(index);
+                tokenNames[ref.state.name].push(i);
                 errorDescription = 'Two Tokens cannot share the same name.';
             } else {
-                tokenNames[ref.state.name] = [index];
+                tokenNames[ref.state.name] = [i];
             }
-        });
+        }
 
         if(errorDescription !== '') {
             this.setState({
