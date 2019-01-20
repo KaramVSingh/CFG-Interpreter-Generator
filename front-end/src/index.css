@@ -15,6 +15,16 @@ body {
     background: salmon;
 }
 
+.terminal-editor .error-message {
+    border-style: solid;
+    border-width: 0.5px;
+    margin-bottom: 5px;
+    margin-top: 15px;
+    padding: 10px;
+    padding-left: 20px;
+    background: salmon;
+}
+
 .token input[type="text"] {
     margin-right: 7%;
     width: 20%;
@@ -36,11 +46,47 @@ body {
     padding-left: 20px;
 }
 
+.terminal {
+    border-style: solid;
+    border-width: 0.5px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    margin-right: 5px;
+    margin-left: 5px;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.terminal td {
+    vertical-align: top;
+}
+
+.terminal button {
+    margin-right: 10px;
+    margin-top: 10px;
+    width: 100px;
+}
+
+.terminal input {
+    margin-right: 20px;
+}
+
+.terminal .expression {
+    width: 590px;
+}
+
+.terminal .expression input {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
 .token-editor .body {
     overflow: scroll;
     height: 250px;
     border: solid;
     border-width: 0.5px;
+    margin-bottom: 30px;
 }
 
 .token-editor .body::-webkit-scrollbar {
@@ -49,6 +95,27 @@ body {
 
 .token-editor .header button {
     margin-top: 10px;
+}
+
+.terminal-editor .header h1 {
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.terminal-editor .header button {
+    margin-top: 10px;
+}
+
+.terminal-editor .body {
+    overflow: scroll;
+    height: 400px;
+    border: solid;
+    border-width: 0.5px;
+    margin-bottom: 30px;
+}
+
+.terminal-editor .body::-webkit-scrollbar {
+    display: none;
 }
 
 .token-editor .header h1 {

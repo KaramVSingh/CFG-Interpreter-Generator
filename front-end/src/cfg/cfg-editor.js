@@ -1,5 +1,6 @@
 import React from 'react';
 import TokenEditor from './token-editor';
+import TerminalEditor from './terminal-editor';
 
 class CfgEditor extends React.Component {
     constructor(props) {
@@ -15,13 +16,15 @@ class CfgEditor extends React.Component {
     }
 
     getObject = () => {
-        var tokenEditor = this.refs.TokenEditor.getObject();
-        if(tokenEditor['error'] !== undefined) {
+        var tokenEditor = this.refs.tokenEditor.getObject();
+        var terminalEditor = this.refs.terminalEditor.getObject();
+        if(tokenEditor['error'] !== undefined || terminalEditor['error'] !== undefined) {
             // we have an error
             console.log('INVALID CFG')
         } else {
             return {
                 tokens: tokenEditor,
+                terminals: terminalEditor
             };
         }
     }
@@ -35,7 +38,8 @@ class CfgEditor extends React.Component {
                     For more information on how this affects the grammar click here.
                 </div>
                 <div className="body">
-                    <TokenEditor propagateUpdate={this.propagateUpdate} ref="TokenEditor" />
+                    <TokenEditor propagateUpdate={this.propagateUpdate} ref="tokenEditor" />
+                    <TerminalEditor propagateUpdate={this.propagateUpdate} ref="terminalEditor" />
                 </div>
             </div>
         );

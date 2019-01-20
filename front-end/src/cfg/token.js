@@ -14,6 +14,48 @@ class Token extends React.Component {
         };
     }
 
+    cleanRegex = () => {
+        var newRegex = "";
+        var escapeCount = 0;
+        for(var i = 0; i < this.state.regex.length; i++) {
+            if(this.state.regex[i] === "^") {
+                if(this.state.regex[i - 1] === "[") {
+                    newRegex = newRegex.concat(this.state.regex[i]);
+                } else if(this.state.regex[i - 1] === "\\") {
+                    if(escapeCount % 2 === 1) {
+                        newRegex = newRegex.concat(this.state.regex[i]);
+                    } else {
+                        newRegex = newRegex.concat("\\^");
+                    }
+                } else {
+                    newRegex = newRegex.concat("\\^");
+                }
+
+                escapeCount = 0;
+            } else if(this.state.regex[i] === "$") {
+                if(escapeCount % 2 === 1) {
+                    newRegex = newRegex.concat(this.state.regex[i]);
+                } else {
+                    newRegex = newRegex.concat("\\$");
+                }
+
+                escapeCount = 0;
+            } else if(this.state.regex[i] === "\\") {
+                escapeCount += 1;
+                newRegex = newRegex.concat(this.state.regex[i]);
+            } else {
+                escapeCount = 0;
+                newRegex = newRegex.concat(this.state.regex[i]);
+            }
+        }
+
+        this.setState({
+            regex: newRegex,
+        }, () => {
+            this.evaluate(this.propagateUpdate);
+        });
+    }
+
     getObject = () => {
         if(this.state.error) {
             return {
@@ -52,28 +94,24 @@ class Token extends React.Component {
         });
     }
 
-    evaluate = (callback) => {
+    isValid = () => {
         if(this.state.name === '' || this.state.regex === '') {
-            this.setState({
-                error: true
-            }, () => {
-                callback();
-            });
+            return false;
         } else {
             if(this.state.name.match(/^[a-zA-Z_]+$/)) {
-                this.setState({
-                    error: false
-                }, () => {
-                    callback();
-                });
+                return true;
             } else {
-                this.setState({
-                    error: true
-                }, () => {
-                    callback();
-                });
+                return false;
             }
         }
+    }
+
+    evaluate = (callback) => {
+        this.setState({
+            error: !this.isValid()
+        }, () => {
+            callback();
+        });
     }
 
     styleForError() {

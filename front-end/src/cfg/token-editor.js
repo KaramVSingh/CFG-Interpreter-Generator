@@ -23,43 +23,67 @@ class TokenEditor extends React.Component {
     }
 
     getObject = () => {
+        var tokenNames = {};
+        var errorDescription = '';
         var data = [];
-        var names = {};
-        var error = '';
 
         this.refCollection.forEach((ref) => {
-            var curr = ref.getObject();
-            data.push(curr);
-            if(curr['error'] !== undefined) {
-                // the token resulted in an error:
-                error = curr['error'];
-                this.setState({
-                    error: error,
-                });
+            ref.evaluate(() => {});
+        });
 
-            } else if(curr['name'] in names) {
-                // there is a repeat name token error
-                error = 'Two tokens cannot share the same name.'
-                this.setState({
-                    error: error,
-                });
-
-            } else {
-                names[curr['name']] = true;
+        this.refCollection.forEach((ref) => {
+            var isValid = ref.isValid();
+            data.push(ref.getObject());
+            if(!isValid) {
+                errorDescription = ref.getObject()['error'];
             }
         });
 
-        if(error === '') {
-            // we do not have an error
+        if(errorDescription !== '') {
+            this.setState({
+                error: errorDescription
+            });
+
+            return {
+                error: errorDescription
+            };
+        }
+
+        this.refCollection.forEach((ref, index) => {
+            if(ref.state.name in tokenNames) {
+                tokenNames[ref.state.name].push(index);
+                errorDescription = 'Two Tokens cannot share the same name.';
+            } else {
+                tokenNames[ref.state.name] = [index];
+            }
+        });
+
+        if(errorDescription !== '') {
+            this.setState({
+                error: errorDescription
+            });
+
+            // we want to highlight the bad ones
+            var tempCollection = this.refCollection;
+            Object.keys(tokenNames).forEach(function(name) {
+                if(tokenNames[name].length !== 1) {
+                    tokenNames[name].forEach((index) => {
+                        tempCollection[index].setState({
+                            error: true
+                        });
+                    });
+                }
+            });
+
+            return {
+                error: errorDescription
+            };
+        } else {
             this.setState({
                 error: ''
             });
 
             return data;
-        } else {
-            return {
-                error: error
-            };
         }
     }
     
@@ -81,7 +105,8 @@ class TokenEditor extends React.Component {
                     and have a corresponding regular expression which defines the structure of the token.
                     They can also be delimiting (i.e. ""). 
                     They are prioritized in-order so ensure that any overlapping regular expressions are 
-                    sorted properly.
+                    sorted properly. Please also ensure that your regular expressions do not accept white
+                    space.
                     <br></br>
                     <button onClick={this.addToken}>Add a token</button>
                 </div>
