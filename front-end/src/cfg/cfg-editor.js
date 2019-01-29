@@ -12,7 +12,9 @@ class CfgEditor extends React.Component {
     }
 
     propagateUpdate = () => {
-        console.log(this.getObject());
+        this.setState({
+            cfg: this.getObject()
+        });
     }
 
     getObject = () => {
@@ -20,8 +22,37 @@ class CfgEditor extends React.Component {
         var terminalEditor = this.refs.terminalEditor.getObject();
         if(tokenEditor['error'] !== undefined || terminalEditor['error'] !== undefined) {
             // we have an error
-            console.log('INVALID CFG')
+            return;
         } else {
+            // here we need to check that each token declared in the terminals exists in the declared tokens
+            for(var i = 0; i < terminalEditor.length; i++) {
+                // for each terminal
+                for(var j = 0; j < terminalEditor[i]['data'].length; j++) {
+                    var expression = terminalEditor[i]['data'][j]
+                    for(var k = 0; k < expression.length; k++) {
+                        var curr = expression[k];
+
+                        if(curr['type'] === "DECLARED TOKEN") {
+                            // we need to check the tokens
+                            var found = false;
+                            for(var l = 0; l < tokenEditor.length; l++) {
+                                if(tokenEditor[l]['name'] === curr['value']) {
+                                    found = true;
+                                }
+                            }
+
+                            if(!found) {
+                                // we have an unreferenced error
+                                this.refs.terminalEditor.setState({
+                                    error: 'Use of undeclared token ' + curr['value'] + '.'
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
             return {
                 tokens: tokenEditor,
                 terminals: terminalEditor

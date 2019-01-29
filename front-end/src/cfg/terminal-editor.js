@@ -13,6 +13,80 @@ class TerminalEditor extends React.Component {
         };
     }
 
+    first = (terminalName, visited) => {
+        // we have the correct terminal, now we just need to write the dynamic function
+        var ref = null;
+        for(var i = 0; i < this.refCollection.length; i++) {
+            if(this.refCollection[i].state.name === terminalName) {
+                ref = this.refCollection[i];
+            }
+        }
+
+        if(ref === null) {
+            return {
+                error: 'terminal: ' + terminalName + ' not found.'
+            };
+        };
+
+        var firsts = ref.first();
+        visited.push(terminalName);
+        var results = [];
+        
+        for(i = 0; i < firsts.length; i++) {
+            if(firsts[i].type === 'TERMINAL') {
+                // we have to check that we have been here before
+                for(var j = 0; j < visited.length - 1; j++) {
+                    if(visited[j] === terminalName) {
+                        var errorMessage = 'Grammar has "first loop" with: ';
+                        for(var k = 0; k < visited.length; k++) {
+                            errorMessage += '[ ' + visited[k] + ' ] -> ';
+                        }
+                        return {
+                            error: errorMessage
+                        };
+                        // if we revisit the same place then we have a non
+                        // recursive descent friendly grammar
+                    }
+                }
+
+                // now we know that we are not in a loop
+                var call = this.first(firsts[i].value, visited);
+                if(call['error'] !== undefined) {
+                    return {
+                        error: call['error']
+                    };
+                }
+
+                for(j = 0; j < call.length; j++) {
+                    var add = true;
+                    for(k = 0; k < results.length; k++) {
+                        if(call[j].type === results[k].type && call[j].value === results[k].value) {
+                            add = false;
+                        }
+                    }
+
+                    if(add) {
+                        results.push(call[j]);
+                    }
+                }
+            } else {
+                // if we have an implied or declared token
+                add = true;
+                for(j = 0; j < results.length; j++) {
+                    if(results[j].type === firsts[i].type && results[j].value === firsts[i].value) {
+                        add = false;
+                    }
+                }
+
+                if(add) {
+                    results.push(firsts[i]);
+                }
+            }
+        }
+
+        return results;
+    }
+
     getObject = () => {
         var terminalNames = {};
         var errorDescription = '';
@@ -75,6 +149,36 @@ class TerminalEditor extends React.Component {
                 error: errorDescription
             };
         } else {
+            // now we need to ensure that each expression is using valid terminals
+            // we already have terminal names to help
+            for(var j = 0; j < data.length; j++) {
+                // data has each terminal. we need each expression
+                for(var k = 0; k < data[j]['data'].length; k++) {
+                    // now we have each expression
+                    var expression = data[j]['data'][k];
+                    for(var l = 0; l < expression.length; l++) {
+                        // now we have each curr
+                        var curr = expression[l];
+                        if(curr['type'] === 'TERMINAL') {
+                            // then we need to check
+                            if(terminalNames[curr['value']] === undefined) {
+                                // we have a bad terminal use
+                                errorDescription = 'Use of undeclared terminal ' + curr['value'] + '.'
+                                this.setState({
+                                    error: errorDescription
+                                });
+
+                                return {
+                                    error: errorDescription
+                                };
+                            }
+                        }
+                    }
+
+                }
+            }
+
+
             this.setState({
                 error: ''
             });
@@ -85,7 +189,7 @@ class TerminalEditor extends React.Component {
 
     addTerminal = () => {
         this.refCollection.push(null);
-        this.state.terminals.push(<Terminal ref={(instance) => { this.refCollection[this.refCollection.length - 1] = instance; }} propagateUpdate={this.propagateUpdate} key={this.state.terminals.length} index={this.state.terminals.length} />);
+        this.state.terminals.push(<Terminal getFirst={this.first} ref={(instance) => { this.refCollection[this.refCollection.length - 1] = instance; }} propagateUpdate={this.propagateUpdate} key={this.state.terminals.length} index={this.state.terminals.length} />);
         
         this.forceUpdate(() => {
             this.propagateUpdate();

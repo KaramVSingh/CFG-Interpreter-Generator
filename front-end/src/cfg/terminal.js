@@ -8,6 +8,7 @@ class Terminal extends React.Component {
         this.index = props.index;
         this.propagateUpdate = props.propagateUpdate;
         this.refCollection = [];
+        this.getFirst = props.getFirst;
         this.state = {
             name: '',
             error: 'Must provide name for terminal.',
@@ -15,18 +16,48 @@ class Terminal extends React.Component {
         };
     }
 
+    first = () => {
+        // should get the first of every expression:
+        var data = []
+        for(var i = 0; i < this.refCollection.length; i++) {
+            data.push(this.refCollection[i].first());
+        }
+
+        return data;
+    }
+
     addExpression = () => {
         this.refCollection.push(null);
-        this.state.expressions.push(<Expression ref={(instance) => { this.refCollection[this.refCollection.length - 1] = instance; }} propagateUpdate={this.propagateUpdate} key={this.state.expressions.length} index={this.state.expressions.length} />);
-        
-        this.evaluate(this.propagateUpdate);
+        var expressions = this.state.expressions;
+        expressions.push(<Expression ref={(instance) => { this.refCollection[this.refCollection.length - 1] = instance; }} propagateUpdate={this.propagateUpdate} key={this.state.expressions.length} index={this.state.expressions.length} />);
+        this.setState({
+            expressions: expressions
+        }, () => {
+            this.evaluate(this.propagateUpdate);
+        });
     }
 
     removeExpression = () => {
-        this.refCollection.pop();
-        this.state.expressions.pop();
-        
-        this.evaluate(this.propagateUpdate);
+        var expressions = this.state.expressions;
+        expressions.pop();
+        this.setState({
+            expressions: expressions
+        }, () => {
+            this.refCollection.pop();
+            this.evaluate(this.propagateUpdate);
+        });        
+    }
+
+    checkOverlap = (setA, setB) => {
+        for(var i = 0; i < setA.length; i++) {
+            for(var j = 0; j < setB.length; j++) {
+                if(setA[i]['type'] === setB[j]['type'] && setA[i]['value'] === setB[j]['value']) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     getObject = () => {
@@ -65,28 +96,87 @@ class Terminal extends React.Component {
             };
         }
 
+        var checkedExpressions = []
         for(i = 0; i < this.refCollection.length; i++) {
             // we need to check for expression based errors.
+            var expression = this.refCollection[i].getObject();
+            // we need to make sure that (1) the firsts are either different
+            // of that (2) if they are the same, the terminals are the same
+
+            // each ref is an expression. we can analyse the terminal expressions
+            // we can look at the first of each expression unless its a terminal
+            var j;
+            for(j = 0; j < checkedExpressions.length; j++) {
+                // now we need to compare the two expressions
+                var expressionA = expression;
+                var expressionB = checkedExpressions[j];
+
+                var depth = 0;
+                while(depth <= expressionA.length && depth <= expressionB.length) {
+                    if(depth === expressionA.length || depth === expressionB.length) {
+                        // we have an ambiguous grammar
+                        errorDescription = 'Recursive Descent Error: Completely ambiguous expressions.';
+                        break;
+                    } 
+
+                    if(expressionA[depth]['type'] !== expressionB[depth]['type'] || 
+                    expressionA[depth]['value'] !== expressionB[depth]['value'] || 
+                    expressionA[depth]['type'] !== 'TERMINAL') {
+                        break;
+                    }
+                    
+                    depth++;
+                }
+
+                if(errorDescription !== '') {
+                    // we had an error in the above step
+                    break;
+                }
+
+                // if were here then we have eliminated the equal firsts cases
+                var firstA = expressionA[depth];
+                var firstB = expressionB[depth];
+
+                if(firstA['type'] === 'TERMINAL' || firstB['type'] === 'TERMINAL') {
+                    if(firstA['type'] === 'TERMINAL' && firstB['type'] === 'TERMINAL') {
+                        // we have two different terminals
+                        // in this case we just want to check that the firsts have no overlap
+                        if(this.checkOverlap(this.getFirst(firstA['value'], []), this.getFirst(firstB['value'], []))) {
+                            errorDescription = 'Recursive Descent Error: First case overlap for expression with terminals ' + firstA['value'] + ' and ' + firstB['value'] + '.';
+                            break;
+                        }
+                    } else if(firstA['type'] === 'TERMINAL') {
+                        // we have only A as the terminal
+                        if(this.checkOverlap(this.getFirst(firstA['value'], []), [firstB])) {
+                            errorDescription = 'Recursive Descent Error: Token ' + firstB['value'] + ' exists in terminal ' + firstA['value'] + '.';
+                            break;
+                        }
+                    } else {
+                        // we have only B as the terminal
+                        if(this.checkOverlap(this.getFirst(firstB['value'], []), [firstA])) {
+                            errorDescription = 'Recursive Descent Error: Token ' + firstA['value'] + ' exists in terminal ' + firstB['value'] + '.';
+                            break;
+                        }
+                    }
+                } else {
+                    if(firstA['type'] === firstB['type'] && firstA['value'] === firstB['value']) {
+                        errorDescription = 'Recursive Descent Error: Token ' + firstA['value'] + ' is ambiguous.';
+                        break;
+                    }
+                }
+            }
+
+            checkedExpressions.push(expression);
+            if(errorDescription !== '') {
+                break;
+            }
+
         }
 
         if(errorDescription !== '') {
             this.setState({
                 error: errorDescription
             });
-
-            // we want to highlight the bad ones
-            /*
-            var tempCollection = this.refCollection;
-            Object.keys(terminalNames).forEach(function(name) {
-                if(terminalNames[name].length !== 1) {
-                    terminalNames[name].forEach((index) => {
-                        tempCollection[index].setState({
-                            error: true
-                        });
-                    });
-                }
-            });
-            */
 
             return {
                 error: errorDescription
@@ -96,7 +186,10 @@ class Terminal extends React.Component {
                 error: ''
             });
 
-            return data;
+            return {
+                name: this.state.name,
+                data: data
+            };
         }
     }
 
