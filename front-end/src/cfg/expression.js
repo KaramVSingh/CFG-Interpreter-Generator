@@ -43,6 +43,10 @@ class Expression extends React.Component {
     }
 
     cleanText(callback) {
+        return callback();
+        
+        /*
+
         var newText = "";
         var escapeCount = 0;
         for(var i = 0; i < this.state.text.length; i++) {
@@ -81,6 +85,8 @@ class Expression extends React.Component {
         }, () => {
             callback();
         });
+
+        */
     }
 
     updateObjects(callback) {
