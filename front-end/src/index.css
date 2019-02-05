@@ -134,3 +134,8 @@ body {
 .cfg-editor .body {
     margin-top: 20px;
 }
+
+.cfg-editor .body .continue {
+    float: right;
+    margin-bottom: 100px;
+}

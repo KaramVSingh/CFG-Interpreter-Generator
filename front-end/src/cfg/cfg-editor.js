@@ -8,12 +8,14 @@ class CfgEditor extends React.Component {
 
         this.state = {
             cfg: {},
+            name: '',
+            canContinue: false
         };
     }
 
     propagateUpdate = () => {
         this.setState({
-            cfg: this.getObject()
+            cfg: this.getObject(),
         });
     }
 
@@ -22,6 +24,10 @@ class CfgEditor extends React.Component {
         var terminalEditor = this.refs.terminalEditor.getObject();
         if(tokenEditor['error'] !== undefined || terminalEditor['error'] !== undefined) {
             // we have an error
+            this.setState({
+                canContinue: false
+            });
+
             return;
         } else {
             // here we need to check that each token declared in the terminals exists in the declared tokens
@@ -46,6 +52,11 @@ class CfgEditor extends React.Component {
                                 this.refs.terminalEditor.setState({
                                     error: 'Use of undeclared token ' + curr['value'] + '.'
                                 });
+
+                                this.setState({
+                                    canContinue: false,
+                                });
+
                                 return;
                             }
                         }
@@ -53,11 +64,35 @@ class CfgEditor extends React.Component {
                 }
             }
 
+            if(this.state.name === '') {
+                this.setState({
+                    canContinue: false,
+                });
+
+                return;
+            }
+
+            this.setState({
+                canContinue: true
+            });
+
             return {
                 tokens: tokenEditor,
                 terminals: terminalEditor
             };
         }
+    }
+
+    updateName(evt) {
+        this.setState({
+            name: evt.target.value,
+        }, () => {
+            this.propagateUpdate();
+        });
+    }
+
+    submit() {
+        
     }
 
     render() {
@@ -69,8 +104,10 @@ class CfgEditor extends React.Component {
                     For more information on how this affects the grammar click here.
                 </div>
                 <div className="body">
+                    <h2>Grammar Name:</h2><input type="text" value={this.state.name} onChange={evt => this.updateName(evt)}></input>
                     <TokenEditor propagateUpdate={this.propagateUpdate} ref="tokenEditor" />
                     <TerminalEditor propagateUpdate={this.propagateUpdate} ref="terminalEditor" />
+                    <button className="continue" disabled={!this.state.canContinue} onClick={this.submit}>Continue</button>
                 </div>
             </div>
         );
