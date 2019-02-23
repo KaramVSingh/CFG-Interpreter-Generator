@@ -67,7 +67,7 @@ class CfgEditor extends React.Component {
                 }
             }
 
-            if(this.state.name === '') {
+            if(this.state.name === '' || this.state.name.includes(';') || this.state.name.includes('&') || this.state.name.includes('|')) {
                 this.setState({
                     canContinue: false,
                 });
@@ -95,8 +95,9 @@ class CfgEditor extends React.Component {
     }
 
     updateName(evt) {
+        var name = evt.target.value.replace(/\s+/g, '');
         this.setState({
-            name: evt.target.value,
+            name: name,
         }, () => {
             this.propagateUpdate();
         });
@@ -110,8 +111,33 @@ class CfgEditor extends React.Component {
         });
     }
 
-    submit() {
-        
+    submit = () => {
+        var data = {
+            name: this.state.name, 
+            start: this.state.start,
+            cfg: this.state.cfg
+        };
+
+        console.log(JSON.stringify(data))
+
+        const request = new Request('http://localhost:8080/api/', {
+            'method': 'POST',
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36',
+            'Access-Control-Allow-Origin' : '*',
+            "Access-Control-Allow-Methods": "GET, POST, DELETE, PUT",
+            referrer: "no-referrer", // no-referrer, *client*
+            body: JSON.stringify(data)
+        });
+
+        fetch(request);
     }
 
     render() {
