@@ -9,7 +9,8 @@ class CfgEditor extends React.Component {
         this.state = {
             cfg: {},
             name: '',
-            canContinue: false
+            canContinue: false,
+            start: '',
         };
     }
 
@@ -20,6 +21,7 @@ class CfgEditor extends React.Component {
     }
 
     getObject = () => {
+        var terminalNames = {};
         var tokenEditor = this.refs.tokenEditor.getObject();
         var terminalEditor = this.refs.terminalEditor.getObject();
         if(tokenEditor['error'] !== undefined || terminalEditor['error'] !== undefined) {
@@ -32,6 +34,7 @@ class CfgEditor extends React.Component {
         } else {
             // here we need to check that each token declared in the terminals exists in the declared tokens
             for(var i = 0; i < terminalEditor.length; i++) {
+                terminalNames[terminalEditor[i].name] = true;
                 // for each terminal
                 for(var j = 0; j < terminalEditor[i]['data'].length; j++) {
                     var expression = terminalEditor[i]['data'][j]
@@ -72,6 +75,14 @@ class CfgEditor extends React.Component {
                 return;
             }
 
+            if(terminalNames[this.state.start] === undefined) {
+                this.setState({
+                    canContinue: false,
+                });
+
+                return;
+            }
+
             this.setState({
                 canContinue: true
             });
@@ -91,6 +102,14 @@ class CfgEditor extends React.Component {
         });
     }
 
+    updateStart(evt) {
+        this.setState({
+            start: evt.target.value,
+        }, () => {
+            this.propagateUpdate();
+        });
+    }
+
     submit() {
         
     }
@@ -104,7 +123,27 @@ class CfgEditor extends React.Component {
                     For more information on how this affects the grammar click here.
                 </div>
                 <div className="body">
-                    <h2>Grammar Name:</h2><input type="text" value={this.state.name} onChange={evt => this.updateName(evt)}></input>
+                    <h2>Specifics:</h2>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    Grammar Name:
+                                </td>
+                                <td>
+                                    <input type="text" value={this.state.name} onChange={evt => this.updateName(evt)}></input>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    First Terminal:
+                                </td>
+                                <td>
+                                    <input type="text" value={this.state.start} onChange={evt => this.updateStart(evt)}></input>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <TokenEditor propagateUpdate={this.propagateUpdate} ref="tokenEditor" />
                     <TerminalEditor propagateUpdate={this.propagateUpdate} ref="terminalEditor" />
                     <button className="continue" disabled={!this.state.canContinue} onClick={this.submit}>Continue</button>
