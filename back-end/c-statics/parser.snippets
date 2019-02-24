@@ -1,0 +1,15 @@
+tuple_t parse_$(token_t *h) {
+node_t *r = (node_t*)malloc(1 * sizeof(node_t));
+r->tokens = (char**)malloc(1 * sizeof(char*));
+r->n_tokens = 0;
+r->next = (node_t**)malloc(1 * sizeof(node_t*));
+r->n_next = 0;
+r->name = (char*)malloc($ * sizeof(char));
+s_move(r->name, "$");
+tuple_t t = parse_$(h);
+h = t.token;
+r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
+r->n_next++;
+r->next[r->n_next - 1] = t.node;
+if($) {
+lookahead(h) == $

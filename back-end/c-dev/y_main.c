@@ -1,4 +1,6 @@
-#include "lexer.h"
+#include "y_lexer.h"
+#include "y_parser.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,12 +9,17 @@ int main(int argc, char *argv[]) {
         printf("Must specify file as argument.\n");
         return 1;
     }
-
+    
     token_t *t = tokenize(argv[argc - 1]);
+
+    /*
     while(t) {
         printf("%s\n", t->value);
         t = t->next;
     }
+    */
+
+    node_t* n = parse(t);
     
     return 0;
 }

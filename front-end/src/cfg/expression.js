@@ -25,13 +25,21 @@ class Expression extends React.Component {
             return {
                 error: this.state.error
             };
+        } else if(this.isValid() !== '') {
+            return {
+                error: this.isValid()
+            };
         } else {
             return this.state.objects;
         }
     }
 
     isValid = () => {
-        return '';
+        if(this.state.objects[0].type === null) {
+            return 'Expression must have a definition.';
+        } else {
+            return '';
+        }
     }
 
     evaluate = (callback) => {

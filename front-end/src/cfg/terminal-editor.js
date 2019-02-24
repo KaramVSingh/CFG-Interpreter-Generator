@@ -37,6 +37,7 @@ class TerminalEditor extends React.Component {
                 // we have to check that we have been here before
                 for(var j = 0; j < visited.length - 1; j++) {
                     if(visited[j] === terminalName) {
+                        console.log(visited)
                         var errorMessage = 'Grammar has "first loop" with: ';
                         for(var k = 0; k < visited.length; k++) {
                             errorMessage += '[ ' + visited[k] + ' ] -> ';
@@ -50,7 +51,12 @@ class TerminalEditor extends React.Component {
                 }
 
                 // now we know that we are not in a loop
-                var call = this.first(firsts[i].value, visited);
+                var newVisited = []
+                for(j = 0; j < visited.length; j++) {
+                    newVisited.push(visited[j]);
+                }
+
+                var call = this.first(firsts[i].value, newVisited);
                 if(call['error'] !== undefined) {
                     return {
                         error: call['error']
@@ -105,6 +111,23 @@ class TerminalEditor extends React.Component {
             data.push(child);
             if(isValid !== '' || child['error'] !== undefined) {
                 errorDescription = child['error'];
+            }
+        }
+
+        if(errorDescription !== '') {
+            this.setState({
+                error: errorDescription
+            });
+
+            return {
+                error: errorDescription
+            };
+        }
+
+        for(i = 0; i < data.length; i++) {
+            var checkError = this.first(data[i].name, []);
+            if(checkError['error'] !== undefined) {
+                errorDescription = checkError['error'];
             }
         }
 
