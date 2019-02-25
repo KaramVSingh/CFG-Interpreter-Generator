@@ -72,25 +72,25 @@ function fullClean(string) {
             escapeCount++;
         } else {
             if(string[i] === '^' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '$' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '*' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '+' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '[' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === ']' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '{' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '}' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === '(' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             } else if(string[i] === ')' && escapeCount % 2 === 0) {
-                newText += '\\';
+                newText += '\\\\';
             }
             escapeCount = 0;
         }
@@ -481,6 +481,33 @@ app.post('/api/', function (req, res, next) {
                             parserSource.write(populate(ifSnippet, [newString]) + '\n');
                             tabs++;
 
+                            // now we want to add the logic that belongs within the if stmt
+                            if(currentWord.type === 'TERMINAL') {
+                                // we want to parse the terminal
+                                for(k = 20; k < 25; k++) {
+                                    // this itterates through the new snippets
+                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], [currentWord.value]) + '\n');
+                                }
+                            } else {
+                                // we want to parse the token
+                                for(k = 15; k < 20; k++) {
+                                    // this itterates through the new snippets
+                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], lookaheads) + '\n');
+                                }
+                            }
+
+                            parserSource.write('\n');
+
+                            // one other thing we need to consider is the end case (top of pyramid)
+                            // at the top of the pyramid we need to do a return
+                            if(index === expression.length - 1) {
+                                // we are at the top of the pyramid
+                                for(k = 25; k < 29; k++) {
+                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], []) + '\n');
+                                }
+                            }
+                            
+
                             index++;
                         }
 
@@ -499,8 +526,15 @@ app.post('/api/', function (req, res, next) {
                         if(j === terminal.data.length - 1) {
                             // all we need to add is an else:
                             parserSource.write(' else {\n');
-                            parserSource.write('\n');
-                            parserSource.write(renderTabs(tabs) + '}\n');
+                            for(k = 29; k < 31; k++) {
+                                parserSource.write(renderTabs(tabs + 1) + populate(snippets[k], []) + '\n');
+                            }
+                            parserSource.write(renderTabs(tabs) + '}\n\n');
+
+                            // and the catch all case error
+                            for(k = 29; k < 31; k++) {
+                                parserSource.write(renderTabs(tabs) + populate(snippets[k], []) + '\n');
+                            }
                         }
                     }
 

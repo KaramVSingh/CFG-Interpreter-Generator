@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -g -Wall
 
 main: main.o lexer.o parser.o
-	$(CC) -o main main.o lexer.o
+	$(CC) -o main main.o lexer.o parser.o
 
 main.o: main.c lexer.h
 	$(CC) $(CFLAGS) -c main.c

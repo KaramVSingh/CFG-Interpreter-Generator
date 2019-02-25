@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -g -Wall
 
 y_main: y_main.o y_lexer.o y_parser.o
-	$(CC) -o y_main y_main.o y_lexer.o
+	$(CC) -o y_main y_main.o y_lexer.o y_parser.o
 
 y_main.o: y_main.c y_lexer.h
 	$(CC) $(CFLAGS) -c y_main.c

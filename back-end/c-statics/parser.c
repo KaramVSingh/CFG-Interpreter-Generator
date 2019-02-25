@@ -30,7 +30,7 @@ void s_move(char *dest, char *src) {
 }
 
 int lookahead(token_t *h) {
-    return (h != NULL? h->type : -1);
+    return (h != NULL? h->index : -1);
 }
 
 token_t* match_token(token_t *h, int v) {
