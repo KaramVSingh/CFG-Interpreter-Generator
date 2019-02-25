@@ -44,211 +44,6 @@ token_t* match_token(token_t *h, int v) {
     return NULL;
 }
 
-tuple_t parse_stmtop(token_t *h) {
-	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
-	r->tokens = (char**)malloc(1 * sizeof(char*));
-	r->n_tokens = 0;
-	r->next = (node_t**)malloc(1 * sizeof(node_t*));
-	r->n_next = 0;
-	r->name = (char*)malloc(6 * sizeof(char));
-	s_move(r->name, "stmtop");
-
-	if(lookahead(h) == 3) {
-		tuple_t t = parse_if(h);
-		h = t.token;
-		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-		r->n_next++;
-		r->next[r->n_next - 1] = t.node;
-
-		tuple_t rt;
-		rt.token = h;
-		rt.node = r;
-		return rt;
-	} else if(lookahead(h) == 0) {
-		tuple_t t = parse_while(h);
-		h = t.token;
-		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-		r->n_next++;
-		r->next[r->n_next - 1] = t.node;
-
-		tuple_t rt;
-		rt.token = h;
-		rt.node = r;
-		return rt;
-	} else if(lookahead(h) == 1) {
-		tuple_t t = parse_print(h);
-		h = t.token;
-		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-		r->n_next++;
-		r->next[r->n_next - 1] = t.node;
-
-		tuple_t rt;
-		rt.token = h;
-		rt.node = r;
-		return rt;
-	} else {
-		printf("Parse Error: Token -> %s\n", h->value);
-		exit(0);
-	}
-
-	printf("Parse Error: Token -> %s\n", h->value);
-	exit(0);
-}
-
-tuple_t parse_if(token_t *h) {
-	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
-	r->tokens = (char**)malloc(1 * sizeof(char*));
-	r->n_tokens = 0;
-	r->next = (node_t**)malloc(1 * sizeof(node_t*));
-	r->n_next = 0;
-	r->name = (char*)malloc(2 * sizeof(char));
-	s_move(r->name, "if");
-
-	if(lookahead(h) == 3) {
-		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-		r->n_tokens++;
-		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 3);
-
-		if(lookahead(h) == 5) {
-			r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-			r->n_tokens++;
-			r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-			s_move(r->tokens[r->n_tokens - 1], h->value);
-			h = match_token(h, 5);
-
-			if(lookahead(h) == 8 || lookahead(h) == 9) {
-				tuple_t t = parse_expr(h);
-				h = t.token;
-				r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-				r->n_next++;
-				r->next[r->n_next - 1] = t.node;
-
-				if(lookahead(h) == 4) {
-					r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-					r->n_tokens++;
-					r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-					s_move(r->tokens[r->n_tokens - 1], h->value);
-					h = match_token(h, 4);
-
-					if(lookahead(h) == 6) {
-						r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-						r->n_tokens++;
-						r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-						s_move(r->tokens[r->n_tokens - 1], h->value);
-						h = match_token(h, 6);
-
-						if(lookahead(h) == 3 || lookahead(h) == 0 || lookahead(h) == 1) {
-							tuple_t t = parse_stmt(h);
-							h = t.token;
-							r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-							r->n_next++;
-							r->next[r->n_next - 1] = t.node;
-
-							if(lookahead(h) == 7) {
-								r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-								r->n_tokens++;
-								r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-								s_move(r->tokens[r->n_tokens - 1], h->value);
-								h = match_token(h, 7);
-
-								tuple_t rt;
-								rt.token = h;
-								rt.node = r;
-								return rt;
-							}
-						}
-					}
-				}
-			}
-		}
-	} else {
-		printf("Parse Error: Token -> %s\n", h->value);
-		exit(0);
-	}
-
-	printf("Parse Error: Token -> %s\n", h->value);
-	exit(0);
-}
-
-tuple_t parse_while(token_t *h) {
-	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
-	r->tokens = (char**)malloc(1 * sizeof(char*));
-	r->n_tokens = 0;
-	r->next = (node_t**)malloc(1 * sizeof(node_t*));
-	r->n_next = 0;
-	r->name = (char*)malloc(5 * sizeof(char));
-	s_move(r->name, "while");
-
-	if(lookahead(h) == 0) {
-		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-		r->n_tokens++;
-		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 0);
-
-		if(lookahead(h) == 5) {
-			r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-			r->n_tokens++;
-			r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-			s_move(r->tokens[r->n_tokens - 1], h->value);
-			h = match_token(h, 5);
-
-			if(lookahead(h) == 8 || lookahead(h) == 9) {
-				tuple_t t = parse_expr(h);
-				h = t.token;
-				r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-				r->n_next++;
-				r->next[r->n_next - 1] = t.node;
-
-				if(lookahead(h) == 4) {
-					r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-					r->n_tokens++;
-					r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-					s_move(r->tokens[r->n_tokens - 1], h->value);
-					h = match_token(h, 4);
-
-					if(lookahead(h) == 6) {
-						r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-						r->n_tokens++;
-						r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-						s_move(r->tokens[r->n_tokens - 1], h->value);
-						h = match_token(h, 6);
-
-						if(lookahead(h) == 3 || lookahead(h) == 0 || lookahead(h) == 1) {
-							tuple_t t = parse_stmt(h);
-							h = t.token;
-							r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
-							r->n_next++;
-							r->next[r->n_next - 1] = t.node;
-
-							if(lookahead(h) == 7) {
-								r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-								r->n_tokens++;
-								r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-								s_move(r->tokens[r->n_tokens - 1], h->value);
-								h = match_token(h, 7);
-
-								tuple_t rt;
-								rt.token = h;
-								rt.node = r;
-								return rt;
-							}
-						}
-					}
-				}
-			}
-		}
-	} else {
-		printf("Parse Error: Token -> %s\n", h->value);
-		exit(0);
-	}
-
-	printf("Parse Error: Token -> %s\n", h->value);
-	exit(0);
-}
-
 tuple_t parse_stmt(token_t *h) {
 	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
 	r->tokens = (char**)malloc(1 * sizeof(char*));
@@ -264,7 +59,7 @@ tuple_t parse_stmt(token_t *h) {
 	r->n_next++;
 	r->next[r->n_next - 1] = t.node;
 
-	if(lookahead(h) == 3 || lookahead(h) == 0 || lookahead(h) == 1) {
+	if(lookahead(h) == 0 || lookahead(h) == 1) {
 		tuple_t t = parse_stmt(h);
 		h = t.token;
 		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
@@ -275,52 +70,43 @@ tuple_t parse_stmt(token_t *h) {
 		rt.token = h;
 		rt.node = r;
 		return rt;
-	} else if(lookahead(h) == 2) {
-		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-		r->n_tokens++;
-		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 2);
-
+	} else {
 		tuple_t rt;
 		rt.token = h;
 		rt.node = r;
 		return rt;
-	} else {
-		printf("Parse Error: Token -> %s\n", h->value);
-		exit(0);
 	}
 
 	printf("Parse Error: Token -> %s\n", h->value);
 	exit(0);
 }
 
-tuple_t parse_expr(token_t *h) {
+tuple_t parse_stmtop(token_t *h) {
 	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
 	r->tokens = (char**)malloc(1 * sizeof(char*));
 	r->n_tokens = 0;
 	r->next = (node_t**)malloc(1 * sizeof(node_t*));
 	r->n_next = 0;
-	r->name = (char*)malloc(4 * sizeof(char));
-	s_move(r->name, "expr");
+	r->name = (char*)malloc(6 * sizeof(char));
+	s_move(r->name, "stmtop");
 
-	if(lookahead(h) == 8) {
-		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-		r->n_tokens++;
-		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 8);
+	if(lookahead(h) == 0) {
+		tuple_t t = parse_print(h);
+		h = t.token;
+		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
+		r->n_next++;
+		r->next[r->n_next - 1] = t.node;
 
 		tuple_t rt;
 		rt.token = h;
 		rt.node = r;
 		return rt;
-	} else if(lookahead(h) == 9) {
-		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
-		r->n_tokens++;
-		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
-		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 9);
+	} else if(lookahead(h) == 1) {
+		tuple_t t = parse_if(h);
+		h = t.token;
+		r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
+		r->n_next++;
+		r->next[r->n_next - 1] = t.node;
 
 		tuple_t rt;
 		rt.token = h;
@@ -344,12 +130,12 @@ tuple_t parse_print(token_t *h) {
 	r->name = (char*)malloc(5 * sizeof(char));
 	s_move(r->name, "print");
 
-	if(lookahead(h) == 1) {
+	if(lookahead(h) == 0) {
 		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
 		r->n_tokens++;
 		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
 		s_move(r->tokens[r->n_tokens - 1], h->value);
-		h = match_token(h, 1);
+		h = match_token(h, 0);
 
 		if(lookahead(h) == 5) {
 			r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
@@ -358,7 +144,7 @@ tuple_t parse_print(token_t *h) {
 			s_move(r->tokens[r->n_tokens - 1], h->value);
 			h = match_token(h, 5);
 
-			if(lookahead(h) == 8 || lookahead(h) == 9) {
+			if(lookahead(h) == 6) {
 				tuple_t t = parse_expr(h);
 				h = t.token;
 				r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
@@ -379,6 +165,112 @@ tuple_t parse_print(token_t *h) {
 				}
 			}
 		}
+	} else {
+		printf("Parse Error: Token -> %s\n", h->value);
+		exit(0);
+	}
+
+	printf("Parse Error: Token -> %s\n", h->value);
+	exit(0);
+}
+
+tuple_t parse_if(token_t *h) {
+	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
+	r->tokens = (char**)malloc(1 * sizeof(char*));
+	r->n_tokens = 0;
+	r->next = (node_t**)malloc(1 * sizeof(node_t*));
+	r->n_next = 0;
+	r->name = (char*)malloc(2 * sizeof(char));
+	s_move(r->name, "if");
+
+	if(lookahead(h) == 1) {
+		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+		r->n_tokens++;
+		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+		s_move(r->tokens[r->n_tokens - 1], h->value);
+		h = match_token(h, 1);
+
+		if(lookahead(h) == 5) {
+			r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+			r->n_tokens++;
+			r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+			s_move(r->tokens[r->n_tokens - 1], h->value);
+			h = match_token(h, 5);
+
+			if(lookahead(h) == 6) {
+				tuple_t t = parse_expr(h);
+				h = t.token;
+				r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
+				r->n_next++;
+				r->next[r->n_next - 1] = t.node;
+
+				if(lookahead(h) == 4) {
+					r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+					r->n_tokens++;
+					r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+					s_move(r->tokens[r->n_tokens - 1], h->value);
+					h = match_token(h, 4);
+
+					if(lookahead(h) == 3) {
+						r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+						r->n_tokens++;
+						r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+						s_move(r->tokens[r->n_tokens - 1], h->value);
+						h = match_token(h, 3);
+
+						if(lookahead(h) == 0 || lookahead(h) == 1) {
+							tuple_t t = parse_stmt(h);
+							h = t.token;
+							r->next = realloc(r->next, (r->n_next + 1) * sizeof(node_t*));
+							r->n_next++;
+							r->next[r->n_next - 1] = t.node;
+
+							if(lookahead(h) == 2) {
+								r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+								r->n_tokens++;
+								r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+								s_move(r->tokens[r->n_tokens - 1], h->value);
+								h = match_token(h, 2);
+
+								tuple_t rt;
+								rt.token = h;
+								rt.node = r;
+								return rt;
+							}
+						}
+					}
+				}
+			}
+		}
+	} else {
+		printf("Parse Error: Token -> %s\n", h->value);
+		exit(0);
+	}
+
+	printf("Parse Error: Token -> %s\n", h->value);
+	exit(0);
+}
+
+tuple_t parse_expr(token_t *h) {
+	node_t *r = (node_t*)malloc(1 * sizeof(node_t));
+	r->tokens = (char**)malloc(1 * sizeof(char*));
+	r->n_tokens = 0;
+	r->next = (node_t**)malloc(1 * sizeof(node_t*));
+	r->n_next = 0;
+	r->name = (char*)malloc(4 * sizeof(char));
+	s_move(r->name, "expr");
+
+	if(lookahead(h) == 6) {
+		r->tokens = realloc(r->tokens, (r->n_tokens + 1) * sizeof(char*));
+		r->n_tokens++;
+		r->tokens[r->n_tokens - 1] = (char*)malloc(strlen(h->value) * sizeof(char));
+		s_move(r->tokens[r->n_tokens - 1], h->value);
+		h = match_token(h, 6);
+
+		tuple_t rt;
+		rt.token = h;
+		rt.node = r;
+		return rt;
 	} else {
 		printf("Parse Error: Token -> %s\n", h->value);
 		exit(0);

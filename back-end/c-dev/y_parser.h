@@ -20,11 +20,10 @@ int lookahead(token_t *h);
 token_t* match_token(token_t *h, int v);
 node_t* parse(token_t *h);
 
-tuple_t parse_stmtop(token_t *h);
-tuple_t parse_if(token_t *h);
-tuple_t parse_while(token_t *h);
 tuple_t parse_stmt(token_t *h);
-tuple_t parse_expr(token_t *h);
+tuple_t parse_stmtop(token_t *h);
 tuple_t parse_print(token_t *h);
+tuple_t parse_if(token_t *h);
+tuple_t parse_expr(token_t *h);
 
 #endif

@@ -14,9 +14,9 @@
 // retn -> tokenset_t* = complied regexes
 tokenset_t* init_tokens() {
     tokenset_t *tokenset = (tokenset_t*)malloc(1 * sizeof(tokenset_t));
-	char *patterns[11] = {"while", "print", "END", "if", "\\)", "\\(", "\\{", "\\}", "[0-9]+", "\"", ".*"};
-	int is_delimiting[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
-	int n_tokens = 11;
+	char *patterns[7] = {"print", "if", "\\}", "\\{", "\\)", "\\(", "[0-9]+"};
+	int is_delimiting[7] = {0, 0, 0, 0, 0, 0, 0};
+	int n_tokens = 7;
 
     tokenset->n_tokens = n_tokens;
     tokenset->right_search = (regex_t**)malloc(n_tokens * sizeof(regex_t*));

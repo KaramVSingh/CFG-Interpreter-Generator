@@ -115,7 +115,7 @@ class Terminal extends React.Component {
                 while(depth <= expressionA.length && depth <= expressionB.length) {
                     if(depth === expressionA.length || depth === expressionB.length) {
                         // we have an ambiguous grammar
-                        errorDescription = 'Recursive Descent Error: Completely ambiguous expressions.';
+                        // errorDescription = 'Recursive Descent Error: Completely ambiguous expressions.';
                         break;
                     } 
 
@@ -126,6 +126,13 @@ class Terminal extends React.Component {
                     }
                     
                     depth++;
+                }
+
+                if(depth === expressionA.length && depth === expressionB.length) {
+                    errorDescription = 'Recursive Descent Error: Completely ambiguous expressions.';
+                } else {
+                    // they are different and we are done
+                    break;
                 }
 
                 if(errorDescription !== '') {

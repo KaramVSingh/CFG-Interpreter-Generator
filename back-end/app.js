@@ -435,6 +435,7 @@ app.post('/api/', function (req, res, next) {
                         parserSource.write('\n');
                     }
 
+                    addReturnInElse = false;
                     // now we want to generate code for each of the possible expression paths by checking lookaheads
                     for(j = 0; j < terminal.data.length; j++) {
                         var index = numTerminalsToBeParsed;
@@ -443,82 +444,87 @@ app.post('/api/', function (req, res, next) {
                         var expression = terminal.data[j];
                         // now we want to start doing the lookahead stuff
 
-                        // currentWord can be a TERMINAL, a TOKEN, cannot be nothing
-                        // for each word in the remainder of the expression, we want to check the lookaheads to ensure
-                        // that they match
-                        while(index < expression.length) {
-                            var currentWord = expression[index];
-                            var lookaheads = [];
-                            if(currentWord.type === 'TERMINAL') {
-                                // the if statememnt should be the first of the terminal
-                                for(k = 0; k < firsts[currentWord.value].length; k++) {
-                                    lookaheads.push(convertToId(firsts[currentWord.value][k], tokens));
+                        if(index === expression.length) {
+                            // we have a valid end of seq
+                            addReturnInElse = true;
+                        } else {
+                            // currentWord can be a TERMINAL, a TOKEN, cannot be nothing
+                            // for each word in the remainder of the expression, we want to check the lookaheads to ensure
+                            // that they match
+                            while(index < expression.length) {
+                                var currentWord = expression[index];
+                                var lookaheads = [];
+                                if(currentWord.type === 'TERMINAL') {
+                                    // the if statememnt should be the first of the terminal
+                                    for(k = 0; k < firsts[currentWord.value].length; k++) {
+                                        lookaheads.push(convertToId(firsts[currentWord.value][k], tokens));
+                                    }
+                                } else {
+                                    lookaheads.push(convertToId(currentWord, tokens));
                                 }
-                            } else {
-                                lookaheads.push(convertToId(currentWord, tokens));
-                            }
 
-                            // now that we have all of the lookaheads, we want to convert it into the formatted string
-                            newString = ''
-                            for(k = 0; k < lookaheads.length; k++) {
-                                newString += populate(snippets[14], [lookaheads[k]]);
-                                if(k !== lookaheads.length - 1) {
-                                    newString += ' || '
+                                // now that we have all of the lookaheads, we want to convert it into the formatted string
+                                newString = ''
+                                for(k = 0; k < lookaheads.length; k++) {
+                                    newString += populate(snippets[14], [lookaheads[k]]);
+                                    if(k !== lookaheads.length - 1) {
+                                        newString += ' || '
+                                    }
                                 }
-                            }
 
-                            // snippet 13 has the if stmt
-                            // we want to add else if it at the base of the expression pyramid
-                            var ifSnippet = snippets[13];
-                            if(index === shortestExprLength - 1 && j !== 0) {
-                                ifSnippet = ' else ' + ifSnippet;
-                            } else {
-                                ifSnippet = renderTabs(tabs) + ifSnippet;
-                            }
-
-                            // we have the formatted string
-                            // now we need to add it to the if statement and push it into the file
-                            parserSource.write(populate(ifSnippet, [newString]) + '\n');
-                            tabs++;
-
-                            // now we want to add the logic that belongs within the if stmt
-                            if(currentWord.type === 'TERMINAL') {
-                                // we want to parse the terminal
-                                for(k = 20; k < 25; k++) {
-                                    // this itterates through the new snippets
-                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], [currentWord.value]) + '\n');
+                                // snippet 13 has the if stmt
+                                // we want to add else if it at the base of the expression pyramid
+                                var ifSnippet = snippets[13];
+                                if(index === shortestExprLength - 1 && j !== 0) {
+                                    ifSnippet = ' else ' + ifSnippet;
+                                } else {
+                                    ifSnippet = renderTabs(tabs) + ifSnippet;
                                 }
-                            } else {
-                                // we want to parse the token
-                                for(k = 15; k < 20; k++) {
-                                    // this itterates through the new snippets
-                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], lookaheads) + '\n');
+
+                                // we have the formatted string
+                                // now we need to add it to the if statement and push it into the file
+                                parserSource.write(populate(ifSnippet, [newString]) + '\n');
+                                tabs++;
+
+                                // now we want to add the logic that belongs within the if stmt
+                                if(currentWord.type === 'TERMINAL') {
+                                    // we want to parse the terminal
+                                    for(k = 20; k < 25; k++) {
+                                        // this itterates through the new snippets
+                                        parserSource.write(renderTabs(tabs) + populate(snippets[k], [currentWord.value]) + '\n');
+                                    }
+                                } else {
+                                    // we want to parse the token
+                                    for(k = 15; k < 20; k++) {
+                                        // this itterates through the new snippets
+                                        parserSource.write(renderTabs(tabs) + populate(snippets[k], lookaheads) + '\n');
+                                    }
                                 }
-                            }
 
-                            parserSource.write('\n');
-
-                            // one other thing we need to consider is the end case (top of pyramid)
-                            // at the top of the pyramid we need to do a return
-                            if(index === expression.length - 1) {
-                                // we are at the top of the pyramid
-                                for(k = 25; k < 29; k++) {
-                                    parserSource.write(renderTabs(tabs) + populate(snippets[k], []) + '\n');
-                                }
-                            }
-                            
-
-                            index++;
-                        }
-
-                        // here we can close all of the curly braces
-                        while(tabs > 1) {
-                            tabs--;
-                            parserSource.write(renderTabs(tabs) + '}');
-
-                            // you only conditionally want the \n if you are not at the bottom of the pyramid
-                            if(tabs !== 1) {
                                 parserSource.write('\n');
+
+                                // one other thing we need to consider is the end case (top of pyramid)
+                                // at the top of the pyramid we need to do a return
+                                if(index === expression.length - 1) {
+                                    // we are at the top of the pyramid
+                                    for(k = 25; k < 29; k++) {
+                                        parserSource.write(renderTabs(tabs) + populate(snippets[k], []) + '\n');
+                                    }
+                                }
+                                
+
+                                index++;
+                            }
+
+                            // here we can close all of the curly braces
+                            while(tabs > 1) {
+                                tabs--;
+                                parserSource.write(renderTabs(tabs) + '}');
+
+                                // you only conditionally want the \n if you are not at the bottom of the pyramid
+                                if(tabs !== 1) {
+                                    parserSource.write('\n');
+                                }
                             }
                         }
 
@@ -526,9 +532,17 @@ app.post('/api/', function (req, res, next) {
                         if(j === terminal.data.length - 1) {
                             // all we need to add is an else:
                             parserSource.write(' else {\n');
-                            for(k = 29; k < 31; k++) {
-                                parserSource.write(renderTabs(tabs + 1) + populate(snippets[k], []) + '\n');
+                            // if we have an expression that is the shortest length, then here we need to put a return case
+                            if(addReturnInElse) {
+                                for(k = 25; k < 29; k++) {
+                                    parserSource.write(renderTabs(tabs + 1) + populate(snippets[k], []) + '\n');
+                                }
+                            } else {
+                                for(k = 29; k < 31; k++) {
+                                    parserSource.write(renderTabs(tabs + 1) + populate(snippets[k], []) + '\n');
+                                }
                             }
+                            
                             parserSource.write(renderTabs(tabs) + '}\n\n');
 
                             // and the catch all case error
