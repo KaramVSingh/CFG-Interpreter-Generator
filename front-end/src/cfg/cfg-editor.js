@@ -144,9 +144,12 @@ class CfgEditor extends React.Component {
         return (
             <div className="cfg-editor">
                 <div className="header">
-                    <h1>Context Free Grammar Editor:</h1>
+                    <h1>Pro-Grammar:</h1> 
                     Please ensure that the context free grammar is <i>Recursive Descent friendly</i>.
-                    For more information on how this affects the grammar click here.
+                    This framework allows you to create a lexer and parser for a given context free grammar.
+                    It also provides an environment and evaluator with a skeleton. These files allow you to define
+                    the behavior of your grammar if you hope to turn it into a programming language. In order to turn the grammar into a
+                    language: (1) open environment.h and define the data_t struct as you would like (2) open evaluate.c and fill in evaluate().
                 </div>
                 <div className="body">
                     <h2>Specifics:</h2>

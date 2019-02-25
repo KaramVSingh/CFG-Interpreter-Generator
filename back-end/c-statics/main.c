@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "parser.h"
+#include "evaluator.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,9 @@ int main(int argc, char *argv[]) {
     */
 
     node_t* n = parse(t);
+    environment_t *env;
+    env = init(env);
+    eval_t e = evaluate(n, env);
     
     return 0;
 }

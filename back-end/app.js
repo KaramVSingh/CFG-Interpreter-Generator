@@ -173,6 +173,14 @@ app.post('/api/', function (req, res, next) {
     var lexerHeader = fs.createWriteStream('c-dev/' + body['name'] + '_lexer.h', {});
     var parserSource = fs.createWriteStream('c-dev/' + body['name'] + '_parser.c', {});
     var parserHeader = fs.createWriteStream('c-dev/' + body['name'] + '_parser.h', {});
+    var environmentSource = fs.createWriteStream('c-dev/' + body['name'] + '_environment.c', {});
+    var environmentHeader = fs.createWriteStream('c-dev/' + body['name'] + '_environment.h', {});
+    var evaluatorSource = fs.createWriteStream('c-dev/' + body['name'] + '_evaluator.c', {});
+    var evaluatorHeader = fs.createWriteStream('c-dev/' + body['name'] + '_evaluator.h', {});
+    var cfg = fs.createWriteStream('c-dev/' + body['name'] + '_cfg.json', {});
+
+    cfg.write(JSON.stringify(body));
+    cfg.end();
 
     // starting with the lexer
     // first we should get every implied token, then we need to sort them by length
@@ -244,10 +252,47 @@ app.post('/api/', function (req, res, next) {
         line = line.replace(/lexer/g, body['name'] + '_lexer');
         line = line.replace(/main/g, body['name'] + '_main');
         line = line.replace(/parser/g, body['name'] + '_parser');
+        line = line.replace(/environment/g, body['name'] + '_environment');
+        line = line.replace(/evaluator/g, body['name'] + '_evaluator');
 
         makefile.write(line + '\n');
     }, () => {
         makefile.end();
+    });
+
+    var lnEvaluatorHeader = 0;
+    lineReader.eachLine('c-statics/evaluator.h', function(line, last) {
+        lnEvaluatorHeader += 1;
+
+        if(lnEvaluatorHeader === 5) {
+            evaluatorHeader.write('#include "' + body['name'] + '_parser.h"\n');
+        } else if(lnEvaluatorHeader === 6) {
+            evaluatorHeader.write('#include "' + body['name'] + '_environment.h"\n');
+        } else {
+            evaluatorHeader.write(line + '\n');
+        }
+    }, () => {
+        evaluatorHeader.end();
+    });
+
+    lineReader.eachLine('c-statics/environment.h', function(line, last) {
+        environmentHeader.write(line + '\n');
+    }, () => {
+        environmentHeader.end();
+    });
+
+    var lnEnvironment = 0;
+    lineReader.eachLine('c-statics/environment.c', function(line, last) {
+        lnEnvironment += 1;
+
+        if(lnEnvironment === 4) {
+            environmentSource.write('#include "' + body['name'] + '_environment.h"\n');
+        } else {
+            environmentSource.write(line + '\n');
+        }
+
+    }, () => {
+        environmentSource.end();
     });
 
     var lnMain = 0;
@@ -257,6 +302,8 @@ app.post('/api/', function (req, res, next) {
             main.write('#include "' + body['name'] + '_lexer.h"\n');
         } else if(lnMain === 2) {
             main.write('#include "' + body['name'] + '_parser.h"\n');
+        } else if(lnMain === 3) {
+            main.write('#include "' + body['name'] + '_evaluator.h"\n');
         } else {
             main.write(line + '\n');
         }
@@ -329,6 +376,38 @@ app.post('/api/', function (req, res, next) {
 
     // now we need to get information about all of the terminals
     const terminals = body['cfg']['terminals'];
+
+    var lnEvaluatorSource = 0;
+    lineReader.eachLine('c-statics/evaluator.c', function(line, last) {
+        lnEvaluatorSource += 1;
+        if(lnEvaluatorSource === 4) {
+            evaluatorSource.write('#include "' + body['name'] + '_evaluator.h"\n');
+        } else if(lnEvaluatorSource === 7) {
+            for(i = 0; i < terminals.length; i++) {
+                var inElse = false;
+                if(i !== 0) {
+                    inElse = true;
+                }
+
+                var line = '\n\t\tdata_t *n = (data_t*)malloc(1 * sizeof(data_t));\n\t\teval_t ret;\n\n\n\t\treturn ret;';
+                var res;
+
+                if(inElse) {
+                    res =  ' else if(!strcmp(n->name, "' + terminals[i].name + '")) {' + line + '\n\t}'
+                } else {
+                    res = '\t' + 'if(!strcmp(n->name, "' + terminals[i].name + '")) {' + line + '\n\t}'
+                }
+
+                evaluatorSource.write(res);
+            }
+
+            evaluatorSource.write('\n')
+        } else {
+            evaluatorSource.write(line + '\n');
+        }
+    }, () => {
+        evaluatorSource.end();
+    });
 
     var lnParserHeader = 0;
     lineReader.eachLine('c-statics/parser.h', function(line, last) {
@@ -464,11 +543,13 @@ app.post('/api/', function (req, res, next) {
                                 }
 
                                 // now that we have all of the lookaheads, we want to convert it into the formatted string
-                                newString = ''
+                                newString = '('
                                 for(k = 0; k < lookaheads.length; k++) {
                                     newString += populate(snippets[14], [lookaheads[k]]);
                                     if(k !== lookaheads.length - 1) {
                                         newString += ' || '
+                                    } else {
+                                        newString += ') && lookahead(h) != -1'
                                     }
                                 }
 
