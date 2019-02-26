@@ -8,7 +8,7 @@ const AdmZip = require('adm-zip');
 const path = require('path');
 
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-    extended: true
+    extended: false
 })); 
 
 app.use(bodyParser.json());
@@ -674,6 +674,7 @@ app.post('/api/', function (req, res, next) {
                                                                                                 var stat = fs.statSync(`c-dev/${body['name']}.zip`);
             
                                                                                                 res.download(`c-dev/${body['name']}.zip`);
+                                                                                                // res.send('hello world')
                                                                                             });
             
                                                                                             

@@ -120,7 +120,7 @@ class CfgEditor extends React.Component {
 
         console.log(JSON.stringify(data))
 
-        const request = new Request('http://localhost:8080/api/', {
+        const request = new Request('https://pro-grammar.herokuapp.com/api/', {
             'method': 'POST',
             mode: "cors", // no-cors, cors, *same-origin
             cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
