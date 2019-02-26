@@ -137,7 +137,17 @@ class CfgEditor extends React.Component {
             body: JSON.stringify(data)
         });
 
-        fetch(request);
+        fetch(request).then(function(resp) {
+            return resp.blob();
+        }).then(blob => {
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = "cfg.zip";
+            document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+            a.click();    
+            a.remove();  //afterwards we remove the element again         
+        });;
     }
 
     render() {

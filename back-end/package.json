@@ -4,6 +4,7 @@
   "main": "app.js",
   "license": "MIT",
   "dependencies": {
+    "adm-zip": "^0.4.13",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "fs": "^0.0.1-security",
